@@ -9,9 +9,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.SolidColor
 import me.jsedwards.sudoku.ui.theme.SudokuSolverTheme
 
 class MainActivity : ComponentActivity() {
@@ -31,11 +31,6 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun SudokuCanvas(modifier: Modifier = Modifier) {
     Canvas(modifier) {
-        val path = Path()
-        path.moveTo(0f, 0f)
-        path.lineTo(50f, 0f)
-        path.lineTo(50f, 50f)
-        path.lineTo(0f, 50f)
-        drawPath(path = path, brush = SolidColor(Color.Red))
+        drawRect(color = Color.Green, size = Size(300f, 300f), topLeft = Offset(size.width / 2f - 150, size.height / 2f - 150))
     }
 }
