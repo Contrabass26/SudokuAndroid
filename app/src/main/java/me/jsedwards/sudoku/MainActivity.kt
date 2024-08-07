@@ -26,12 +26,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
+import androidx.compose.ui.unit.dp
 import me.jsedwards.sudoku.ui.theme.SudokuSolverTheme
 import kotlin.math.floor
 
 const val MARGIN = 20f
 
 private val possibilities = mutableMapOf<Pair<Int, Int>, MutableList<Int>>()
+private val selectedSquare = arrayOf(0, 0)
 
 class MainActivity : ComponentActivity() {
 
@@ -42,9 +44,29 @@ class MainActivity : ComponentActivity() {
                 // A surface container using the 'background' color from the theme
                 Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
                     Column {
-                        SudokuCanvas()
-                        Button({ println("Hello from button") }) {
-                            Text("Cheese")
+                        val refresh = SudokuCanvas()
+                        // 1 to 5
+                        Row(modifier = Modifier.absolutePadding(left = 5.dp, right = 5.dp)) {
+                            for (i in 1..5) {
+                                Button({
+                                    possibilities[selectedSquare[0] to selectedSquare[1]] = mutableListOf(i)
+                                    refresh()
+                                }, modifier = Modifier.fillMaxWidth(1f / (6 - i))) { Text(i.toString()) }
+                            }
+                        }
+                        // 6 to 9
+                        Row(modifier = Modifier.absolutePadding(left = 5.dp, right = 5.dp)) {
+                            for (i in 6..9) {
+                                Button({
+                                    possibilities[selectedSquare[0] to selectedSquare[1]] = mutableListOf(i)
+                                    refresh()
+                                }, modifier = Modifier.fillMaxWidth(1f / (11 - i))) { Text(i.toString()) }
+                            }
+                            // Clear
+                            Button({
+                                possibilities.remove(selectedSquare[0] to selectedSquare[1])
+                                refresh()
+                            }, modifier = Modifier.fillMaxWidth()) { Text("X") }
                         }
                     }
                 }
@@ -54,23 +76,23 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun SudokuCanvas(modifier: Modifier = Modifier) {
+fun SudokuCanvas(modifier: Modifier = Modifier): () -> Unit {
+    var refresh by remember { mutableStateOf(false) }
     val textMeasurer = rememberTextMeasurer(9)
-    var selectedSquareX by remember { mutableIntStateOf(0) }
-    var selectedSquareY by remember { mutableIntStateOf(0) }
     BoxWithConstraints {
         Canvas(modifier.size(maxWidth, maxWidth).pointerInput(Unit) {
             detectTapGestures { offset ->
-                selectedSquareX = floor((offset.x - MARGIN) / (size.width - MARGIN) * 9).toInt()
-                selectedSquareY = floor((offset.y - MARGIN) / (size.width - MARGIN) * 9).toInt()
+                selectedSquare[0] = floor((offset.x - MARGIN) / (size.width - MARGIN) * 9).toInt()
+                selectedSquare[1] = floor((offset.y - MARGIN) / (size.width - MARGIN) * 9).toInt()
+                refresh = !refresh
             }
         }) {
-            println("Drawing canvas")
+            refresh.apply {}
             val gridSize = size.width - MARGIN * 2
             val squareSize = gridSize / 9
             val gridEnd = size.width - MARGIN
             // Selected square
-            drawRect(Color(250, 218, 74), Offset(MARGIN + selectedSquareX * squareSize, MARGIN + selectedSquareY * squareSize), Size(squareSize, squareSize), style = Fill)
+            drawRect(Color(250, 218, 74), Offset(MARGIN + selectedSquare[0] * squareSize, MARGIN + selectedSquare[1] * squareSize), Size(squareSize, squareSize), style = Fill)
             // Main square
             drawRect(Color.Black, Offset(MARGIN, MARGIN), Size(gridSize, gridSize), style = Stroke(width = 20f))
             // Other lines
@@ -98,4 +120,5 @@ fun SudokuCanvas(modifier: Modifier = Modifier) {
             }
         }
     }
+    return { refresh = !refresh }
 }
