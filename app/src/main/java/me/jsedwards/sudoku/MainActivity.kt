@@ -1,5 +1,7 @@
 package me.jsedwards.sudoku
 
+import Grid
+import Solver
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -32,7 +34,7 @@ import kotlin.math.floor
 
 const val MARGIN = 20f
 
-private val possibilities = mutableMapOf<Pair<Int, Int>, MutableList<Int>>()
+private val grid = Grid()
 private val selectedSquare = arrayOf(0, 0)
 
 class MainActivity : ComponentActivity() {
@@ -49,7 +51,7 @@ class MainActivity : ComponentActivity() {
                         Row(modifier = Modifier.absolutePadding(left = 5.dp, right = 5.dp)) {
                             for (i in 1..5) {
                                 Button({
-                                    possibilities[selectedSquare[0] to selectedSquare[1]] = mutableListOf(i)
+                                    grid.set(selectedSquare[0], selectedSquare[1], mutableListOf(i))
                                     refresh()
                                 }, modifier = Modifier.fillMaxWidth(1f / (6 - i))) { Text(i.toString()) }
                             }
@@ -58,15 +60,23 @@ class MainActivity : ComponentActivity() {
                         Row(modifier = Modifier.absolutePadding(left = 5.dp, right = 5.dp)) {
                             for (i in 6..9) {
                                 Button({
-                                    possibilities[selectedSquare[0] to selectedSquare[1]] = mutableListOf(i)
+                                    grid.set(selectedSquare[0], selectedSquare[1], mutableListOf(i))
                                     refresh()
                                 }, modifier = Modifier.fillMaxWidth(1f / (11 - i))) { Text(i.toString()) }
                             }
                             // Clear
                             Button({
-                                possibilities.remove(selectedSquare[0] to selectedSquare[1])
+                                grid.remove(selectedSquare[0] to selectedSquare[1])
                                 refresh()
                             }, modifier = Modifier.fillMaxWidth()) { Text("X") }
+                        }
+                        // Solve
+                        Row(modifier = Modifier.absolutePadding(left = 5.dp, right = 5.dp)) {
+                            Button({
+                                val solver = Solver(grid)
+                                solver.solve()
+                                refresh()
+                            }, modifier = Modifier.fillMaxWidth()) { Text("Solve") }
                         }
                     }
                 }
@@ -103,7 +113,8 @@ fun SudokuCanvas(modifier: Modifier = Modifier): () -> Unit {
                 drawLine(Color.Black, Offset(MARGIN, offset), Offset(gridEnd, offset), strokeWidth)
             }
             // Numbers
-            possibilities.filterValues { it.size == 1 }.forEach { (x, y), (value) ->
+            Grid.locations().associateWith { grid.get(it) }.filterValues { it?.size == 1 }.forEach { (x, y), list ->
+                val value = list!!.first()
                 val layoutResult = textMeasurer.measure(
                     value.toString(),
                     style = TextStyle(
