@@ -1,5 +1,3 @@
-import java.util.function.Predicate
-
 typealias Coordinate = Pair<Int, Int>
 typealias Possibilities = MutableList<Int>
 
