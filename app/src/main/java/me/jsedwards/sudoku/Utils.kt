@@ -1,3 +1,5 @@
+import java.io.File
+
 typealias Coordinate = Pair<Int, Int>
 typealias Possibilities = MutableList<Int>
 
@@ -48,3 +50,10 @@ fun <T> Iterable<Iterable<T>>.foldToSet() = fold(mutableSetOf<T>()) { set, addit
 fun <T> Iterable<T>.containsAny(other: Iterable<T>) = other.any { contains(it) }
 
 fun <T> Iterable<Iterable<T>>.intersect() = this.fold(this.first()) { a, b -> a.intersect(b.toSet()) }
+
+fun File.then(relativePath: String): File {
+    val builder = StringBuilder(absolutePath)
+    if (!relativePath.startsWith(File.separatorChar)) builder.append(File.separatorChar)
+    builder.append(relativePath)
+    return File(builder.toString())
+}
